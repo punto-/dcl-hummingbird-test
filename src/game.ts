@@ -44,7 +44,7 @@ bird.addComponent(new Transform({
   scale: new Vector3(2, 2, 2),
   rotation: Quaternion.Euler(0, 180, 0),
 }))
-bird.addComponent(new GLTFShape('models/hummingbird.glb'))
+bird.addComponent(new GLTFShape('models/hummingbird2.glb'))
 engine.addEntity(bird)
 
 // set animations
@@ -52,14 +52,13 @@ let birdAnim = new Animator()
 bird.addComponent(birdAnim)
 
 const flyAnim = new AnimationState('fly', { layer: 0 })
-flyAnim.speed = 2
+flyAnim.speed = 8
 birdAnim.addClip(flyAnim)
-flyAnim.play()
 
 const lookAnim = new AnimationState('look', { looping: false, layer: 1 })
 birdAnim.addClip(lookAnim)
 
-const shakeAnim = new AnimationState('shake', { looping: false, layer: 2 })
+const shakeAnim = new AnimationState('shake', { looping: false, layer: 1 })
 birdAnim.addClip(shakeAnim)
 
 /////////////////////
@@ -110,8 +109,7 @@ lookCube.addComponent(
 
 // fly animation
 let flyCube = createCube(new Vector3(2, 1, 0.5), 'Fly')
-let flyOn = true
-flyCube.addComponentOrReplace(onMaterial)
+let flyOn = false
 flyCube.addComponent(
   new OnClick((e) => {
     if (flyOn) {
