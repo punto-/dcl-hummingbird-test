@@ -1,3 +1,11 @@
+
+
+import { NFT } from "./nft"
+
+import { data } from "./data"
+
+
+
 function createCube(pos: Vector3, caption: string) {
   let cube = new Entity()
   cube.addComponent(
@@ -39,11 +47,12 @@ engine.addEntity(ground)
 /////////////////////
 // Create Bird
 const bird = new Entity()
-bird.addComponent(new Transform({
+const bird_xform = new Transform({
   position: new Vector3(8, 1, 8),
-  scale: new Vector3(2, 2, 2),
+  scale: new Vector3(0.15, 0.15, 0.15),
   rotation: Quaternion.Euler(0, 180, 0),
-}))
+})
+bird.addComponent(bird_xform)
 bird.addComponent(new GLTFShape('models/hummingbird2.glb'))
 engine.addEntity(bird)
 
@@ -61,8 +70,78 @@ birdAnim.addClip(lookAnim)
 const shakeAnim = new AnimationState('shake', { looping: false, layer: 1 })
 birdAnim.addClip(shakeAnim)
 
-/////////////////////
-// Create Interactions
+flyAnim.play()
+
+function distance_to(pos1: Vector3, pos2: Vector3): number {
+  const a = pos1.x - pos2.x
+  const b = pos1.z - pos2.z
+  return a * a + b * b
+}
+ // Behaviours
+const player = Camera.instance
+const MOVE_SPEED = 1
+const ROT_SPEED = 1
+
+let birdArrivedAtTarget = false
+class FollowBehaviour implements ISystem {
+  update(dt: number) {
+    let distance = distance_to(bird_xform.position, player.position) // Check distance squared as it's more optimized
+	if (distance <= 16) {
+	birdMoving = false
+	if (distance >= 1) {
+	birdArrivedAtTarget = false
+    // Rotate to face the player
+    let lookAtTarget = new Vector3(player.position.x, 1.5, player.position.z)
+    let direction = lookAtTarget.subtract(bird_xform.position)
+    bird_xform.rotation = Quaternion.Slerp(bird_xform.rotation, Quaternion.LookRotation(direction), dt * ROT_SPEED)
+	
+    let forwardVector = Vector3.Forward().rotate(bird_xform.rotation)
+	bird_xform.translate(forwardVector.scale(dt * MOVE_SPEED))
+	} else {
+	  if (!birdArrivedAtTarget) {
+	  lookAnim.play()
+	  }
+	  birdArrivedAtTarget = true
+	}
+    }
+  }
+}
+
+engine.addSystem(new FollowBehaviour())
+
+let birdMoving = false
+let nextPos : Vector3
+class RandomFlyBehaviour implements ISystem {
+  update(dt: number) {
+    let distance = distance_to(bird_xform.position, player.position) // Check distance squared as it's more optimized
+	if (distance > 16) {
+	birdArrivedAtTarget = false
+	
+	if (!birdMoving) {
+	birdMoving = true
+	nextPos = new Vector3(
+        Math.random() * 12 + 2,
+        Math.random() * 3 + 1,
+        Math.random() * 12 + 2
+      )
+	  bird_xform.lookAt(nextPos)
+	}
+	
+    let forwardVector = Vector3.Forward().rotate(bird_xform.rotation)
+    let increment = forwardVector.scale(dt * MOVE_SPEED)
+    bird_xform.translate(increment)
+	
+	if (distance_to(bird_xform.position, nextPos) <= 1) {
+	birdMoving = false
+	}
+	}
+  }
+}
+
+engine.addSystem(new RandomFlyBehaviour())
+
+// Video Controls
+
 
 // reusable materials
 let onMaterial = new Material()
@@ -71,56 +150,125 @@ onMaterial.albedoColor = Color3.Green()
 let offMaterial = new Material()
 offMaterial.albedoColor = Color3.White()
 
-// shake animation
-let shakeCube = createCube(new Vector3(2, 1, 2), 'Shake')
-let shakeOn = false
-shakeCube.addComponent(
+function createPrimitive(pos: Vector3, type, scale = new Vector3(0.5, 0.5, 0.5)) {
+let shape = new Entity()
+shape.addComponent(
+new Transform({
+  position: pos,
+  scale: scale,
+})
+)
+
+switch (type) {
+case 0:
+shape.addComponent(new SphereShape())
+break
+case 1:
+shape.addComponent(new CylinderShape())
+break
+case 2:
+shape.addComponent(new ConeShape())
+break
+case 3:
+shape.addComponent(new PlaneShape())
+break
+case 4:
+shape.addComponent(new BoxShape())
+break
+}
+
+engine.addEntity(shape)
+return shape
+}
+const visibilityShape = createPrimitive(new Vector3(9, 1, 1), 4)
+const muteShape = createPrimitive(new Vector3(10, 1, 1), 0)
+const loopShape = createPrimitive(new Vector3(11, 1, 1), 1)
+const playShape = createPrimitive(new Vector3(12, 1, 1), 2)
+const screenShape = createPrimitive(new Vector3(14, 1, 1), 3, new Vector3(3, 2, 1))
+
+// Video
+const videoClip = new VideoClip("videos/small.ogv")
+const videoTexture = new VideoTexture(videoClip)
+
+const screenMaterial = new Material()
+screenMaterial.albedoTexture = videoTexture
+screenMaterial.emissiveTexture = videoTexture
+screenMaterial.emissiveColor = Color3.White()
+screenMaterial.emissiveIntensity = 0.6
+screenMaterial.roughness = 1.0
+screenShape.addComponent(screenMaterial)
+
+
+let visibleControls = true
+visibilityShape.addComponent(
   new OnClick((e) => {
-    if (shakeOn) {
-      shakeOn = false
-      shakeCube.addComponentOrReplace(offMaterial)
-      shakeAnim.stop()
+    if (visibleControls) {
+      visibleControls = false
     }
     else {
-      shakeOn = true
-      shakeCube.addComponentOrReplace(onMaterial)
-      shakeAnim.play()
+      visibleControls = true
+    }
+	muteShape.getComponent(SphereShape).withCollisions = visibleControls
+	loopShape.getComponent(CylinderShape).withCollisions = visibleControls
+	playShape.getComponent(ConeShape).withCollisions = visibleControls
+  })
+)
+
+let videoPlaying = false
+playShape.addComponent(
+  new OnClick((e) => {
+    if (videoPlaying) {
+      videoPlaying = false
+	  videoTexture.pause()
+      playShape.addComponentOrReplace(offMaterial)
+    }
+    else {
+      videoPlaying = true
+	  videoTexture.play()
+      playShape.addComponentOrReplace(onMaterial)
     }
   })
 )
 
-// look animation
-let lookCube = createCube(new Vector3(0.5, 1, 2), 'Look')
-let lookOn = false
-lookCube.addComponent(
+videoTexture.loop = false
+loopShape.addComponent(
   new OnClick((e) => {
-    if (lookOn) {
-      lookOn = false
-      lookCube.addComponentOrReplace(offMaterial)
-      lookAnim.stop()
+    if (videoTexture.loop) {
+      videoTexture.loop = false
+      loopShape.addComponentOrReplace(offMaterial)
     }
     else {
-      lookOn = true
-      lookCube.addComponentOrReplace(onMaterial)
-      lookAnim.play()
+      videoTexture.loop = true
+      loopShape.addComponentOrReplace(onMaterial)
     }
   })
 )
 
-// fly animation
-let flyCube = createCube(new Vector3(2, 1, 0.5), 'Fly')
-let flyOn = false
-flyCube.addComponent(
+let videoMuted = false
+muteShape.addComponent(onMaterial)
+muteShape.addComponent(
   new OnClick((e) => {
-    if (flyOn) {
-      flyOn = false
-      flyCube.addComponentOrReplace(offMaterial)
-      flyAnim.stop()
+    if (videoMuted) {
+      videoMuted = false
+	  videoTexture.volume = 1
+      muteShape.addComponentOrReplace(onMaterial)
     }
     else {
-      flyOn = true
-      flyCube.addComponentOrReplace(onMaterial)
-      flyAnim.play()
+      videoMuted = true
+	  videoTexture.volume = 0
+      muteShape.addComponentOrReplace(offMaterial)
     }
   })
+)
+
+// NFTs
+
+const cryptoKittiesNFT = new NFT(
+  new NFTShape("ethereum://" + data[1].address),
+  new Transform({
+    position: new Vector3(1, 2.5, 8),
+    scale: new Vector3(4, 4, 4),
+  }),
+  new Color3(1.5, 1.5, 0.0),
+  data[1].id
 )
