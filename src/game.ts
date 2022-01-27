@@ -264,11 +264,39 @@ muteShape.addComponent(
 // NFTs
 
 const cryptoKittiesNFT = new NFT(
-  new NFTShape("ethereum://" + data[1].address),
+  new NFTShape("ethereum://" + data[1].address, { color: Color3.Red(), style: PictureFrameStyle.Classic}),
   new Transform({
     position: new Vector3(1, 2.5, 8),
+	rotation: Quaternion.Euler(0,-45,0),
+    scale: new Vector3(3, 3, 3),
+  }),
+  data[1].id
+)
+
+const exampleNFT1 = new NFT(
+  new NFTShape("ethereum://" + data[0].address, { color: Color3.Yellow(), style: PictureFrameStyle.Blocky}),
+  new Transform({
+    position: new Vector3(3, 2.5, 16),
     scale: new Vector3(4, 4, 4),
   }),
-  new Color3(1.5, 1.5, 0.0),
+  data[1].id
+)
+
+const exampleNFT2 = new NFT(
+  new NFTShape("ethereum://" + data[2].address, { color: Color3.Blue(), style: PictureFrameStyle.Gold_Carved}),
+  new Transform({
+    position: new Vector3(10, 2.5, 16),
+    scale: new Vector3(4, 4, 4),
+  }),
+  data[1].id
+)
+
+const exampleNFT3 = new NFT(
+  new NFTShape("ethereum://" + data[3].address, { color: Color3.Green(), style: PictureFrameStyle.Gold_Wide}),
+  new Transform({
+    position: new Vector3(12, 2.5, 8),
+	rotation: Quaternion.Euler(0,45,0),
+    scale: new Vector3(3, 3, 3),
+  }),
   data[1].id
 )
