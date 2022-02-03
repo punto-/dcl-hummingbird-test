@@ -453,14 +453,14 @@ const pickUpSound = new Entity()
 pickUpSound.addComponent(new AudioSource(new AudioClip('sounds/pickUp.mp3')))
 pickUpSound.addComponent(new Transform())
 engine.addEntity(pickUpSound)
-pickUpSound.setParent(Attachable.AVATAR)
+pickUpSound.setParent(bird)
 
 
 const putDownSound = new Entity()
 putDownSound.addComponent(new AudioSource(new AudioClip('sounds/putDown.mp3')))
 putDownSound.addComponent(new Transform())
 engine.addEntity(putDownSound)
-putDownSound.setParent(Attachable.AVATAR)
+putDownSound.setParent(bird)
 
 
 // Controls
@@ -474,7 +474,7 @@ Input.instance.subscribe('BUTTON_DOWN', ActionButton.PRIMARY, false, (e) => {
     transform.position = Vector3.Zero()
     transform.rotation = Quaternion.Zero()
     transform.position.z += Z_OFFSET
-    crate.setParent(Attachable.AVATAR)
+    crate.setParent(bird)
   } else {
     crate.isGrabbed = false
     putDownSound.getComponent(AudioSource).playOnce()
