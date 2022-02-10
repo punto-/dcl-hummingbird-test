@@ -273,7 +273,7 @@ muteShape.addComponent(
 // NFTs
 
 const cryptoKittiesNFT = new NFT(
-  new NFTShape("ethereum://" + data[1].address, { color: Color3.Red(), style: PictureFrameStyle.Classic}),
+  new NFTShape("ethereum://" + data[1].address, { color: Color3.Red(), style: randomEnum(PictureFrameStyle)}),
   new Transform({
     position: new Vector3(1, 2.5, 8),
 	rotation: Quaternion.Euler(0,-45,0),
@@ -283,7 +283,7 @@ const cryptoKittiesNFT = new NFT(
 )
 
 const exampleNFT1 = new NFT(
-  new NFTShape("ethereum://" + data[0].address, { color: Color3.Yellow(), style: PictureFrameStyle.Blocky}),
+  new NFTShape("ethereum://" + data[0].address, { color: Color3.Yellow(), style: randomEnum(PictureFrameStyle)}),
   new Transform({
     position: new Vector3(3, 2.5, 16),
     scale: new Vector3(4, 4, 4),
@@ -292,7 +292,7 @@ const exampleNFT1 = new NFT(
 )
 
 const exampleNFT2 = new NFT(
-  new NFTShape("ethereum://" + data[2].address, { color: Color3.Blue(), style: PictureFrameStyle.Gold_Carved}),
+  new NFTShape("ethereum://" + data[2].address, { color: Color3.Blue(), style: randomEnum(PictureFrameStyle)}),
   new Transform({
     position: new Vector3(10, 2.5, 16),
     scale: new Vector3(4, 4, 4),
@@ -301,7 +301,7 @@ const exampleNFT2 = new NFT(
 )
 
 const exampleNFT3 = new NFT(
-  new NFTShape("ethereum://" + data[3].address, { color: Color3.Green(), style: PictureFrameStyle.Gold_Wide}),
+  new NFTShape("ethereum://" + data[3].address, { color: Color3.Green(), style: randomEnum(PictureFrameStyle)}),
   new Transform({
     position: new Vector3(12, 2.5, 8),
 	rotation: Quaternion.Euler(0,45,0),
@@ -427,4 +427,9 @@ function pressButton(i: number) {
         .set(utils.ToggleState.Off)
     }
   }
+}
+
+function randomEnum(e: any) {
+  let keys = Object.keys(e)
+  return e[keys[keys.length * Math.random() << 0]]
 }
