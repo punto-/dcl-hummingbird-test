@@ -336,7 +336,7 @@ for (let i = 0; i < songs.length; i++) {
   let posX = buttonPositions[i].x
   let posY = buttonPositions[i].y
 
-  log(posX, posY, songs.length)
+  //log(posX, posY, songs.length)
   // groups the button itself and label
   let buttonWrapper = new Entity()
   buttonWrapper.addComponent(
@@ -431,5 +431,7 @@ function pressButton(i: number) {
 
 function randomEnum(e: any) {
   let keys = Object.keys(e)
-  return e[keys[keys.length * Math.random() << 0]]
+  keys = keys.slice(0,keys.length /2) // Half the array because the first half of keys are ints and the second half are strings. ¯\_(ツ)_/¯
+  let ret = e[keys[keys.length * Math.random() << 0]] 
+  return ret
 }
