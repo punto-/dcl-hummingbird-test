@@ -198,7 +198,8 @@ const playShape = createPrimitive(new Vector3(12, 1, 1), 2)
 const screenShape = createPrimitive(new Vector3(14, 1, 1), 3, new Vector3(3, 2, 1))
 
 // Video
-const videoClip = new VideoClip("videos/small.ogv")
+//const videoClip = new VideoClip("videos/small.ogv")
+const videoClip = new VideoClip("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4")
 const videoTexture = new VideoTexture(videoClip)
 
 const screenMaterial = new Material()
